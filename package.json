@@ -1,0 +1,11 @@
+{
+  "name": "meetapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/anamauad/meetapp.git",
+  "author": "anamauad <ana.mauad@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
