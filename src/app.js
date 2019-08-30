@@ -1,17 +1,27 @@
 import express, { json } from 'express';
+import routes from './routes';
 
 class App {
   constructor() {
-    this.connection = express();
-    this.connection.use(json());
-
+    this.server = express();
+    this.middlewares();
     this.routes();
   }
 
+  middlewares() {
+    this.server.use(json());
+    this.server.use((req, res, next) => {
+      console.log(
+        `Request method: ${req.method} ${req.httpVersion} ${req.headers.host}${
+          req.url
+        } ${req.headers['user-agent']}`
+      );
+      return next();
+    });
+  }
+
   routes() {
-    this.connection.get('/', (req, res) =>
-      res.json({ msg: 'server up and reloading with EC6, eslint, prettier..' })
-    );
+    this.server.use(routes);
   }
 }
-module.exports = new App().connection;
+module.exports = new App().server;
