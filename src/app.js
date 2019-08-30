@@ -9,7 +9,9 @@ class App {
   }
 
   routes() {
-    this.connection.get('/', (req, res) => res.json({ msg: 'server up and reloading with EC6..' }));
+    this.connection.get('/', (req, res) =>
+      res.json({ msg: 'server up and reloading with EC6, eslint, prettier..' })
+    );
   }
 }
 module.exports = new App().connection;
