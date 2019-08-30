@@ -1,4 +1,4 @@
-import express, { json } from "express";
+import express, { json } from 'express';
 
 class App {
   constructor() {
@@ -9,9 +9,7 @@ class App {
   }
 
   routes() {
-    this.connection.get("/", (req, res) => {
-      return res.json({ msg: "server up and reloading with EC6.." });
-    });
+    this.connection.get('/', (req, res) => res.json({ msg: 'server up and reloading with EC6..' }));
   }
 }
 module.exports = new App().connection;

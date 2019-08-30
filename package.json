@@ -9,6 +9,9 @@
     "dev": "nodemon src/server.js"
   },
   "dependencies": {
+    "eslint": "^6.2.2",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
     "express": "^4.17.1"
   },
   "devDependencies": {
