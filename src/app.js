@@ -1,16 +1,16 @@
-const express = require("express");
+import express, { json } from "express";
 
 class App {
   constructor() {
     this.connection = express();
-    this.connection.use(express.json());
+    this.connection.use(json());
 
     this.routes();
   }
 
   routes() {
     this.connection.get("/", (req, res) => {
-      return res.json({ msg: "server up" });
+      return res.json({ msg: "server up and reloading with EC6.." });
     });
   }
 }
