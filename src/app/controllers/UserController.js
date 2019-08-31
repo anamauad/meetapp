@@ -50,10 +50,6 @@ class UserController {
         .status(400)
         .json({ error: 'User with same e-mail already exists' });
     }
-    req.body.password_hash = req.body.password
-      .split('')
-      .reverse()
-      .join('');
     const { id, name, email } = await User.create(req.body);
     return res.json({ id, name, email });
   }
@@ -96,13 +92,7 @@ class UserController {
       }
     }
     if (password) {
-      if (
-        user.password_hash !=
-        oldPassword
-          .split('')
-          .reverse()
-          .join('')
-      ) {
+      if (!(await user.checkPassword(oldPassword))) {
         return res.status(401).json({ error: 'Password does not match' });
       }
       if (oldPassword == password) {
@@ -111,10 +101,6 @@ class UserController {
           .json({ error: 'New password must be different from actual' });
       }
     }
-    req.body.password_hash = req.body.password
-      .split('')
-      .reverse()
-      .join('');
     const { name, email: userEmail } = await user.update(req.body);
     return res.json({ id, name, email: userEmail });
   }

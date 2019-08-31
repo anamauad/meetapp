@@ -13,7 +13,27 @@ class User extends Model {
         sequelize,
       }
     );
+
+    this.addHook('beforeSave', user => {
+      if (user.password) {
+        user.password_hash = user.password
+          .split('')
+          .reverse()
+          .join('');
+      }
+    });
+
     return this;
+  }
+
+  checkPassword(password) {
+    return (
+      this.password_hash ==
+      password
+        .split('')
+        .reverse()
+        .join('')
+    );
   }
 }
 
