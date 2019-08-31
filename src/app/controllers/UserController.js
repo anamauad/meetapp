@@ -1,15 +1,17 @@
 import * as Yup from 'yup';
-
-const users = [];
-let count = 0;
+import User from '../models/User';
 
 class UserController {
-  index(req, res) {
+  async index(req, res) {
+    const users = await User.findAll();
     const list = users.map(user => {
       const { id, name, email } = user;
       return { id, name, email };
     });
-    return res.json(list);
+    if (list.length > 0) {
+      return res.json(list);
+    }
+    return res.json({ msg: 'No users found' });
   }
 
   async show(req, res) {
@@ -20,7 +22,7 @@ class UserController {
       return res.status(401).json({ error: 'Invalid id' });
     }
     const { id } = req.params;
-    const user = users.find(u => u.id == id);
+    const user = await User.findByPk(id);
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
@@ -42,10 +44,17 @@ class UserController {
       return res.status(401).json({ error: 'Invalid input data' });
     }
 
-    const id = count++;
-    const { name, email, password } = req.body;
-    users.push({ id, name, email, password });
-
+    const userExists = await User.findOne({ where: { email: req.body.email } });
+    if (userExists) {
+      return res
+        .status(400)
+        .json({ error: 'User with same e-mail already exists' });
+    }
+    req.body.password_hash = req.body.password
+      .split('')
+      .reverse()
+      .join('');
+    const { id, name, email } = await User.create(req.body);
     return res.json({ id, name, email });
   }
 
@@ -72,13 +81,28 @@ class UserController {
     }
 
     const { id } = req.params;
-    const user = users.find(u => u.id == id);
+
+    const user = await User.findByPk(id);
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
-    const { name, email, oldPassword, password } = req.body;
+    const { email, oldPassword, password } = req.body;
+    if (email && email !== user.email) {
+      const userExists = await User.findOne({ where: { email } });
+      if (userExists) {
+        return res
+          .status(400)
+          .json({ error: 'Another user has same e-mail address.' });
+      }
+    }
     if (password) {
-      if (user.password != oldPassword) {
+      if (
+        user.password_hash !=
+        oldPassword
+          .split('')
+          .reverse()
+          .join('')
+      ) {
         return res.status(401).json({ error: 'Password does not match' });
       }
       if (oldPassword == password) {
@@ -87,16 +111,12 @@ class UserController {
           .json({ error: 'New password must be different from actual' });
       }
     }
-    if (name) {
-      user.name = name;
-    }
-    if (email) {
-      user.email = email;
-    }
-    if (password) {
-      user.password = password;
-    }
-    return res.json({ id, name, email });
+    req.body.password_hash = req.body.password
+      .split('')
+      .reverse()
+      .join('');
+    const { name, email: userEmail } = await user.update(req.body);
+    return res.json({ id, name, email: userEmail });
   }
 
   async delete(req, res) {
@@ -107,12 +127,12 @@ class UserController {
       return res.status(401).json({ error: 'Invalid id' });
     }
     const { id } = req.params;
-    const index = users.findIndex(u => u.id == id);
-    if (index < 0 || users[index].id != id) {
+    const user = await User.findByPk(id);
+    if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
-    users.splice(index, 1);
-    return res.json(users);
+    await user.destroy({ where: { id } });
+    return res.json({ ok: true });
   }
 }
 export default new UserController();

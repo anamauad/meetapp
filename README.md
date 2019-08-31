@@ -15,3 +15,10 @@ Executa a migração (e adiciona um registro na tabela SequelizeMigrate):
 ```
 yarn sequelize db:migrate
 ```
+
+Desfazer a última migração:
+
+```
+yarn sequelize db:migrate:undo
+yarn sequelize db:migrate:undo:all
+```
