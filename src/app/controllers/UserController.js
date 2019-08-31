@@ -55,12 +55,6 @@ class UserController {
   }
 
   async update(req, res) {
-    const schemaId = Yup.object().shape({
-      id: Yup.number().required(),
-    });
-    if (!(await schemaId.isValid(req.params))) {
-      return res.status(401).json({ error: 'Invalid id' });
-    }
     const schema = Yup.object().shape({
       name: Yup.string(),
       email: Yup.string().email(),
@@ -76,9 +70,7 @@ class UserController {
       return res.status(401).json({ error: 'Invalid input data' });
     }
 
-    const { id } = req.params;
-
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(req.userId);
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
@@ -101,24 +93,36 @@ class UserController {
           .json({ error: 'New password must be different from actual' });
       }
     }
-    const { name, email: userEmail } = await user.update(req.body);
+    const { id, name, email: userEmail } = await user.update(req.body);
     return res.json({ id, name, email: userEmail });
   }
 
   async delete(req, res) {
     const schema = Yup.object().shape({
-      id: Yup.number().required(),
+      password: Yup.string().min(4),
+      confirmPassword: Yup.string().when('password', (password, field) =>
+        password ? field.required().oneOf([Yup.ref('password')]) : field
+      ),
     });
-    if (!(await schema.isValid(req.params))) {
-      return res.status(401).json({ error: 'Invalid id' });
+    if (!(await schema.isValid(req.body))) {
+      return res.status(401).json({ error: 'Invalid input data' });
     }
-    const { id } = req.params;
-    const user = await User.findByPk(id);
+
+    const user = await User.findByPk(req.userId);
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
+    const { id, name, email } = user;
+    const { password } = req.body;
+
+    if (password) {
+      if (!(await user.checkPassword(password))) {
+        return res.status(401).json({ error: 'Password does not match' });
+      }
+    }
+
     await user.destroy({ where: { id } });
-    return res.json({ ok: true });
+    return res.json({ name, email });
   }
 }
 export default new UserController();
