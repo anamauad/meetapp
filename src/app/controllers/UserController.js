@@ -93,8 +93,15 @@ class UserController {
           .json({ error: 'New password must be different from actual' });
       }
     }
-    const { id, name, email: userEmail } = await user.update(req.body);
-    return res.json({ id, name, email: userEmail });
+    try {
+      const { id, name, email: userEmail } = await user.update(req.body);
+      return res.json({ id, name, email: userEmail });
+    } catch (err) {
+      return res.status(400).json({
+        error: 'Could not update user',
+        detail: err.name ? err.name : err,
+      });
+    }
   }
 
   async delete(req, res) {

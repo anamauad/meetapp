@@ -4,7 +4,7 @@ App agregador de eventos para desenvolvedores
 
 ## Sequelize
 
-Cria arquivo para definir novas tabelas:
+Cria arquivo de migração de base de dados para criar nova tabela "users":
 
 ```
 yarn sequelize migration:create --name=create-users
