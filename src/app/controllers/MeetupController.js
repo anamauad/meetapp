@@ -101,5 +101,36 @@ class MeetupController {
 
     return res.json({ id, title, date, description, place, banner_id });
   }
+
+  async delete(req, res) {
+    const meetup = await Meetup.findByPk(req.params.id, {
+      include: [
+        {
+          model: File,
+          as: 'banner',
+          attributes: ['id', 'path', 'url'],
+        },
+      ],
+    });
+    if (!meetup) {
+      return res.status(400).json({ error: 'Meetup not found' });
+    }
+
+    if (meetup.user_id !== req.userId) {
+      return res
+        .status(401)
+        .json({ error: 'User is not the meetup organizer' });
+    }
+
+    if (isBefore(parseISO(meetup.date), new Date())) {
+      return res
+        .status(400)
+        .json({ error: 'A meetup in the past cannot be cancelled' });
+    }
+    await meetup.destroy();
+
+    const { id, title, date, description, place } = meetup;
+    return res.json({ id, title, date, description, place });
+  }
 }
 export default new MeetupController();
