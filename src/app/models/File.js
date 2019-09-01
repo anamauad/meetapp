@@ -7,9 +7,14 @@ class File extends Model {
         name: Sequelize.STRING,
         path: Sequelize.STRING,
         size: Sequelize.INTEGER,
-        email: Sequelize.STRING,
         encoding: Sequelize.STRING,
         mimetype: Sequelize.STRING,
+        url: {
+          type: Sequelize.VIRTUAL,
+          get() {
+            return `/files/${this.path}`;
+          },
+        },
       },
       {
         sequelize,

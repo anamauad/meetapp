@@ -1,4 +1,5 @@
 import express, { json } from 'express';
+import { resolve } from 'path';
 import routes from './routes';
 import './database';
 
@@ -19,6 +20,10 @@ class App {
       );
       return next();
     });
+    this.server.use(
+      '/files',
+      express.static(resolve(__dirname, '..', 'tmp', 'uploads'))
+    );
   }
 
   routes() {
