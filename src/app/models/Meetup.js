@@ -23,7 +23,8 @@ class Meetup extends Model {
     this.belongsToMany(models.User, {
       foreignKey: 'meetup_id',
       as: 'session',
-      through: 'subscriptions',
+      through: models.Subscription,
+      uniqueKey: 'unique_subscription',
     });
   }
 }

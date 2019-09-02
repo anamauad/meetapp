@@ -29,7 +29,8 @@ class User extends Model {
     this.belongsToMany(models.Meetup, {
       foreignKey: 'user_id',
       as: 'subscriber',
-      through: 'subscriptions',
+      through: models.Subscription,
+      uniqueKey: 'unique_subscription',
     });
   }
 

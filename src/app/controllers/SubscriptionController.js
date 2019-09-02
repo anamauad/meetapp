@@ -1,9 +1,32 @@
-import { isBefore } from 'date-fns';
+import { isBefore, subHours, addHours } from 'date-fns';
+import { Op } from 'sequelize';
 import User from '../models/User';
 import Meetup from '../models/Meetup';
 import Subscription from '../models/Subscription';
 
 class SubscriptionController {
+  async index(req, res) {
+    const subscriptions = await Subscription.findAll({
+      where: {
+        user_id: req.userId,
+      },
+      attributes: [],
+      include: [
+        {
+          model: User,
+          as: 'subscriber',
+          attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: Meetup,
+          as: 'session',
+          attributes: ['id', 'title', 'date', 'description', 'place'],
+        },
+      ],
+    });
+    return res.json(subscriptions);
+  }
+
   async store(req, res) {
     const user = await User.findByPk(req.userId);
     if (!user) {
@@ -24,7 +47,7 @@ class SubscriptionController {
     if (isBefore(meetup.date, new Date())) {
       return res
         .status(400)
-        .json({ error: 'Cannot subscribe to a past meetup session' });
+        .json({ error: 'Cannot subscribe to a meetup session in the past' });
     }
     const subscriptionData = {
       user_id: req.userId,
@@ -37,6 +60,30 @@ class SubscriptionController {
     if (subscription) {
       return res.status(401).json({
         error: 'User has already subscribed to this meetup',
+      });
+    }
+
+    const subscriptionsAtSameHour = await Subscription.findOne({
+      where: {
+        user_id: req.userId,
+        '$session.date$': {
+          [Op.gte]: subHours(meetup.date, 1),
+          [Op.lte]: addHours(meetup.date, 1),
+        },
+      },
+      attributes: [],
+      include: [
+        {
+          model: Meetup,
+          as: 'session',
+          attributes: ['id', 'title', 'date', 'description', 'place'],
+        },
+      ],
+    });
+    if (subscriptionsAtSameHour) {
+      return res.status(401).json({
+        error:
+          'User is subscribed to another meetup at the same time interval (2 hours)',
       });
     }
 
