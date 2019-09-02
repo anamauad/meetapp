@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express, { json } from 'express';
 import { resolve } from 'path';
 import routes from './routes';
