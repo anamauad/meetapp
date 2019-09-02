@@ -9,6 +9,9 @@ class SubscriptionController {
     const subscriptions = await Subscription.findAll({
       where: {
         user_id: req.userId,
+        '$session.date$': {
+          [Op.gte]: new Date(),
+        },
       },
       attributes: [],
       include: [
@@ -23,6 +26,7 @@ class SubscriptionController {
           attributes: ['id', 'title', 'date', 'description', 'place'],
         },
       ],
+      order: [[{ model: Meetup, as: 'session' }, 'date']],
     });
     return res.json(subscriptions);
   }
