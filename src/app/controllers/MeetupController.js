@@ -122,7 +122,7 @@ class MeetupController {
         .json({ error: 'User is not the meetup organizer' });
     }
 
-    if (isBefore(parseISO(meetup.date), new Date())) {
+    if (isBefore(meetup.date, new Date())) {
       return res
         .status(400)
         .json({ error: 'A meetup in the past cannot be cancelled' });
