@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import User from '../models/User';
 import Meetup from '../models/Meetup';
 import Subscription from '../models/Subscription';
+import Mail from '../../lib/Mail';
 
 class SubscriptionController {
   async index(req, res) {
@@ -37,7 +38,15 @@ class SubscriptionController {
       return res.status(400).json({ error: 'User not found' });
     }
 
-    const meetup = await Meetup.findByPk(req.params.id);
+    const meetup = await Meetup.findByPk(req.params.id, {
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['name', 'email'],
+        },
+      ],
+    });
     if (!meetup) {
       return res.status(400).json({ error: 'Meetup not found' });
     }
@@ -92,6 +101,13 @@ class SubscriptionController {
     }
 
     await Subscription.create(subscriptionData);
+
+    await Mail.sendMail({
+      to: `${meetup.user.name} <${meetup.user.email}>`,
+      subject: `Novo inscrito no meetup "${meetup.title}"`,
+      text: `Mais um inscrito no meetup: ${user.name} (${user.email})`,
+    });
+
     return res.json(subscriptionData);
   }
 }
