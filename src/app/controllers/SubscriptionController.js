@@ -1,4 +1,5 @@
-import { isBefore, subHours, addHours } from 'date-fns';
+import { isBefore, subHours, addHours, format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
 import { Op } from 'sequelize';
 import User from '../models/User';
 import Meetup from '../models/Meetup';
@@ -105,7 +106,18 @@ class SubscriptionController {
     await Mail.sendMail({
       to: `${meetup.user.name} <${meetup.user.email}>`,
       subject: `Novo inscrito no meetup "${meetup.title}"`,
-      text: `Mais um inscrito no meetup: ${user.name} (${user.email})`,
+      template: 'subscription',
+      context: {
+        organizer: meetup.user.name,
+        place: meetup.place,
+        title: meetup.title,
+        description: meetup.description,
+        user: user.name,
+        email: user.email,
+        date: format(meetup.date, "d 'de' MMM 'de' yyyy 'às' H:mm'h'", {
+          locale: pt,
+        }),
+      },
     });
 
     return res.json(subscriptionData);
